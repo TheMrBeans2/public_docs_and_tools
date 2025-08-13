@@ -1,0 +1,23 @@
+id: 6e43cf02-8d22-4894-9c21-5c8a4d38aecc
+name: Threat - XDR - o365 - Email Activity with Watchlist Address - Rule
+kind: Scheduled
+severity: Medium
+enabled: false
+query: |
+  // Email events involving monitored addresses (configure MonitoredAddresses parameter before enabling)
+  let MonitoredAddresses = dynamic([]); // configure before enabling
+  EmailEvents
+  | where EmailDirection in ("Inbound","Outbound")
+  | where tolower(RecipientEmailAddress) in~ (MonitoredAddresses) or tolower(SenderFromAddress) in~ (MonitoredAddresses)
+  | project Timestamp, NetworkMessageId, EmailDirection, SenderFromAddress, RecipientEmailAddress, Subject, ThreatTypes, DeliveryAction
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - Collection
+relevantTechniques:
+  - T1114
+description: Threat - XDR - o365 - Email Activity with Watchlist Address - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

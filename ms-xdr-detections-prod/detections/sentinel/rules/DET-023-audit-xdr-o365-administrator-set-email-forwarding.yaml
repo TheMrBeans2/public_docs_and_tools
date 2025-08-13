@@ -1,0 +1,29 @@
+id: 60d227b3-bdb2-4fa9-bac1-e2c0dba3e067
+name: Audit - XDR - o365 - Administrator Set Email Forwarding - Rule
+kind: Scheduled
+severity: High
+enabled: true
+query: |
+  // Admin-configured mailbox forwarding
+  let lookback=24h;
+  OfficeActivity
+  | where TimeGenerated > ago(lookback)
+  | where OfficeWorkload == "Exchange" and Operation =~ "Set-Mailbox"
+  | extend P = parse_json(Parameters)
+  | extend MailboxOwnerUPN = tostring(P[0].Value)
+  | extend Forwarding = tostring(P[-1].Value)
+  | where Forwarding has_any ("ForwardingSmtpAddress","ForwardingAddress")
+  | project TimeGenerated, Operation, MailboxOwnerUPN, UserId, ClientIP, Forwarding
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - Persistence
+  - Exfiltration
+relevantTechniques:
+  - T1098
+  - T1114
+description: Audit - XDR - o365 - Administrator Set Email Forwarding - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

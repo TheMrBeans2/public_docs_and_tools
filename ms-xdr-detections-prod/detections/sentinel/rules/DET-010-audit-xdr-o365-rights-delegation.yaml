@@ -1,0 +1,28 @@
+id: 857309d1-846f-461d-b184-cb020b61625f
+name: Audit - XDR - o365 - Rights Delegation - Rule
+kind: Scheduled
+severity: High
+enabled: true
+query: |
+  // Mailbox rights delegation (full access / send-as)
+  let lookback=24h;
+  OfficeActivity
+  | where TimeGenerated > ago(lookback)
+  | where OfficeWorkload == "Exchange"
+  | where Operation in~ ("Add-MailboxPermission","Add-MailboxFolderPermission")
+  | extend P = parse_json(Parameters)
+  | extend AccessRights = tostring(P[2].Value), #2 = tostring(P[2].Name)
+  | extend MailboxOwnerUPN = tostring(P[0].Value), Delegate = tostring(P[1].Value)
+  | where AccessRights has_any ("FullAccess","SendAs","SendOnBehalf")
+  | project TimeGenerated, Operation, MailboxOwnerUPN, Delegate, AccessRights, UserId, ClientIP
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - Persistence
+relevantTechniques:
+  - T1098
+description: Audit - XDR - o365 - Rights Delegation - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

@@ -1,0 +1,23 @@
+id: a1ea70b2-d116-4af4-acfd-8e7f2b2930df
+name: Identity - XDR - Authentication Activity from Expired User Identity - Rule
+kind: Scheduled
+severity: Low
+enabled: true
+query: |
+  // Repeated attempts with expired password (AADSTS50055)
+  let lookback = 24h;
+  SigninLogs
+  | where TimeGenerated > ago(lookback)
+  | where toint(Status.errorCode) == 50055 or ResultDescription has "AADSTS50055"
+  | project TimeGenerated, UserPrincipalName, IPAddress, AppDisplayName, ResultDescription
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - CredentialAccess
+relevantTechniques:
+  - T1110
+description: Identity - XDR - Authentication Activity from Expired User Identity - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

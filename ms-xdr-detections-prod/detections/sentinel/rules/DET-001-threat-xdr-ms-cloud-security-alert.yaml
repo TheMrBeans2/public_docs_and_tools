@@ -1,0 +1,72 @@
+id: 3ad27b6d-0e3b-4a30-9a9d-9a7d5e4f0c11
+name: DET-001 - Threat - XDR - MS - Cloud Security Alert
+version: 1.0.1
+kind: Scheduled
+description: >
+  Creates incidents for Microsoft security product SecurityAlert events, excluding Sentinel-generated alerts
+  and excluding providers covered by dedicated rules (MDE and Defender for Cloud) to avoid duplication.
+severity: Medium
+enabled: true
+query: |
+  let lookback = 15m;
+  SecurityAlert
+  | where TimeGenerated between (ago(lookback) .. now())
+  | where isnotempty(SystemAlertId)
+  | where ProductName !contains "Sentinel" and ProviderName !contains "Sentinel"
+  | where ProviderName !in ("MDATP","Microsoft Defender for Endpoint","Azure Security Center","Microsoft Defender for Cloud")
+        and ProductName !has "Defender for Endpoint"
+        and ProductName !has "Defender for Cloud"
+  | summarize arg_max(TimeGenerated, *) by tostring(SystemAlertId)
+  | project
+      TimeGenerated,
+      ProviderName,
+      ProductName,
+      AlertName,
+      AlertSeverity,
+      CompromisedEntity,
+      SystemAlertId,
+      AlertLink,
+      Entities
+queryFrequency: PT5M
+queryPeriod: PT15M
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - Execution
+  - CredentialAccess
+  - DefenseEvasion
+  - Discovery
+  - InitialAccess
+  - Persistence
+  - PrivilegeEscalation
+relevantTechniques:
+  - T1059
+  - T1078
+  - T1562
+  - T1087
+  - T1566
+  - T1098
+  - T1068
+suppressionEnabled: true
+suppressionDuration: PT15M
+eventGroupingSettings:
+  aggregationKind: AlertPerResult
+alertDetailsOverride:
+  alertDisplayNameFormat: 'MS Cloud Security Alert: {{AlertName}} ({{ProviderName}} / {{ProductName}})'
+  alertDescriptionFormat: >
+    Vendor alert from {{ProductName}} ({{ProviderName}}).
+    Vendor link: {{AlertLink}} | SystemAlertId: {{SystemAlertId}}
+customDetails:
+  SystemAlertId: '{{SystemAlertId}}'
+  ProviderName: '{{ProviderName}}'
+  ProductName: '{{ProductName}}'
+  AlertLink: '{{AlertLink}}'
+entityMappings:
+  - entityType: Host
+    fieldMappings:
+      - identifier: HostName
+        columnName: CompromisedEntity
+incidentConfiguration:
+  createIncident: true
+  groupingConfiguration:
+    enabled: false

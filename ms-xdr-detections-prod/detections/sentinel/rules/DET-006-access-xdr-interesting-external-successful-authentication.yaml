@@ -1,0 +1,30 @@
+id: 771c5a7e-06eb-47a0-82af-a12cfd3161ce
+name: Access - XDR - Interesting External Successful Authentication - Rule
+kind: Scheduled
+severity: Medium
+enabled: true
+query: |
+  // New ASN for the user in last 30 days
+  let window = 30d;
+  let baseline =
+      SigninLogs
+      | where TimeGenerated between (ago(window) .. ago(1d))
+      | where ResultType == 0
+      | summarize by UserPrincipalName, AutonomousSystemNumber;
+  SigninLogs
+  | where TimeGenerated > ago(1d)
+  | where ResultType == 0
+  | project TimeGenerated, UserPrincipalName, IPAddress, Country=tostring(LocationDetails.countryOrRegion), AutonomousSystemNumber, AppDisplayName, ClientAppUsed
+  | join kind=leftanti baseline on UserPrincipalName, AutonomousSystemNumber
+  | where isnotempty(AutonomousSystemNumber) and isnotempty(IPAddress)
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - CredentialAccess
+relevantTechniques:
+  - T1078
+description: Access - XDR - Interesting External Successful Authentication - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

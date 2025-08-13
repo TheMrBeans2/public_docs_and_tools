@@ -1,0 +1,29 @@
+DetectionID,Title,Slug,Category,Type,DocPath
+DET-001,Threat - XDR - MS - Cloud Security Alert - Rule,threat-xdr-ms-cloud-security-alert,Threat,replace,docs/detections/DET-001-threat-xdr-ms-cloud-security-alert.md
+DET-002,Audit - XDR - o365 - eDiscovery Export Alert - Rule,audit-xdr-o365-ediscovery-export-alert,Audit,replace,docs/detections/DET-002-audit-xdr-o365-ediscovery-export-alert.md
+DET-003,Endpoint - XDR - Azure SecurityCenter Alert - Rule,endpoint-xdr-azure-securitycenter-alert,Endpoint,replace,docs/detections/DET-003-endpoint-xdr-azure-securitycenter-alert.md
+DET-004,Threat - XDR - o365 - Potential Government Email Spoof Attempt - Rule,threat-xdr-o365-potential-government-email-spoof-attempt,Threat,custom,docs/detections/DET-004-threat-xdr-o365-potential-government-email-spoof-attempt.md
+DET-005,Access - XDR - Successful AzureAD Login from Risk Country - Rule,access-xdr-successful-azuread-login-from-risk-country,Access,custom,docs/detections/DET-005-access-xdr-successful-azuread-login-from-risk-country.md
+DET-006,Access - XDR - Interesting External Successful Authentication - Rule,access-xdr-interesting-external-successful-authentication,Access,custom,docs/detections/DET-006-access-xdr-interesting-external-successful-authentication.md
+DET-007,Endpoint - XDR - Unblocked Malware Activity - Rule,endpoint-xdr-unblocked-malware-activity,Endpoint,custom,docs/detections/DET-007-endpoint-xdr-unblocked-malware-activity.md
+DET-008,Audit - XDR - Suspicious Large Email to External Recipient - Rule,audit-xdr-suspicious-large-email-to-external-recipient,Audit,custom,docs/detections/DET-008-audit-xdr-suspicious-large-email-to-external-recipient.md
+DET-009,Threat - XDR - Email - Delivered Mail from Newly Resolving Domain - Rule,threat-xdr-email-delivered-mail-from-newly-resolving-domain,Threat,custom,docs/detections/DET-009-threat-xdr-email-delivered-mail-from-newly-resolving-domain.md
+DET-010,Audit - XDR - o365 - Rights Delegation - Rule,audit-xdr-o365-rights-delegation,Audit,custom,docs/detections/DET-010-audit-xdr-o365-rights-delegation.md
+DET-011,Access - XDR - o365 - File Interactions with Suspicious Countries - Rule,access-xdr-o365-file-interactions-with-suspicious-countries,Access,custom,docs/detections/DET-011-access-xdr-o365-file-interactions-with-suspicious-countries.md
+DET-012,Threat - XDR - Threat Activity Detected - Rule,threat-xdr-threat-activity-detected,Threat,replace,docs/detections/DET-012-threat-xdr-threat-activity-detected.md
+DET-013,Threat - XDR - Threat Activity Past 24 Hours Detected - Rule,threat-xdr-threat-activity-past-24-hours-detected,Threat,replace,docs/detections/DET-013-threat-xdr-threat-activity-past-24-hours-detected.md
+DET-014,Access - XDR - Possible User Injection Activity - Rule,access-xdr-possible-user-injection-activity,Access,custom,docs/detections/DET-014-access-xdr-possible-user-injection-activity.md
+DET-015,Endpoint - XDR - Severe Host Malware Activity - Rule,endpoint-xdr-severe-host-malware-activity,Endpoint,replace,docs/detections/DET-015-endpoint-xdr-severe-host-malware-activity.md
+DET-016,Identity - XDR - Authentication Activity from Expired User Identity - Rule,identity-xdr-authentication-activity-from-expired-user-identity,Identity,custom,docs/detections/DET-016-identity-xdr-authentication-activity-from-expired-user-identity.md
+DET-017,Threat - XDR - Email - Delivered Mail to Newly Resolving Domain - Rule,threat-xdr-email-delivered-mail-to-newly-resolving-domain,Threat,custom,docs/detections/DET-017-threat-xdr-email-delivered-mail-to-newly-resolving-domain.md
+DET-018,Access - XDR - Short Lived Account Detected - Rule,access-xdr-short-lived-account-detected,Access,replace,docs/detections/DET-018-access-xdr-short-lived-account-detected.md
+DET-019,Threat - XDR - o365 - Email Activity with Watchlist Address - Rule,threat-xdr-o365-email-activity-with-watchlist-address,Threat,custom_disabled,docs/detections/DET-019-threat-xdr-o365-email-activity-with-watchlist-address.md
+DET-020,Threat - XDR - Malware Emailed to Users - Rule,threat-xdr-malware-emailed-to-users,Threat,custom,docs/detections/DET-020-threat-xdr-malware-emailed-to-users.md
+DET-021,Endpoint - XDR - Defender - EDR Events - Rule,endpoint-xdr-defender-edr-events,Endpoint,replace,docs/detections/DET-021-endpoint-xdr-defender-edr-events.md
+DET-022,Threat - XDR - DEX-005 - OOB - Mail redirect via ExO transport rule - Rule,threat-xdr-o365-mail-redirect-via-exo-transport-rule,Threat,replace,docs/detections/DET-022-threat-xdr-o365-mail-redirect-via-exo-transport-rule.md
+DET-023,Audit - XDR - o365 - Administrator Set Email Forwarding - Rule,audit-xdr-o365-administrator-set-email-forwarding,Audit,custom,docs/detections/DET-023-audit-xdr-o365-administrator-set-email-forwarding.md
+DET-024,Access - XDR - AAD - Authentication Attempt from New Country - Rule,access-xdr-aad-authentication-attempt-from-new-country,Access,replace,docs/detections/DET-024-access-xdr-aad-authentication-attempt-from-new-country.md
+DET-025,Identity - XDR - Service Principal Authentication Attempt from New Country - Rule,identity-xdr-service-principal-authentication-attempt-from-new-country,Identity,replace,docs/detections/DET-025-identity-xdr-service-principal-authentication-attempt-from-new-country.md
+DET-026,Access - XDR - AD - User Account Created and Deleted within 10 Minutes - Rule,access-xdr-ad-user-account-created-deleted-10m,Access,replace,docs/detections/DET-026-access-xdr-ad-user-account-created-deleted-10m.md
+DET-027,Threat - XDR - o365 - NRT Malicious Inbox Rule - Rule,threat-xdr-o365-nrt-malicious-inbox-rule,Threat,replace,docs/detections/DET-027-threat-xdr-o365-nrt-malicious-inbox-rule.md
+DET-028,Audit - XDR - M365 - Rare Office Operations - Rule,audit-xdr-m365-rare-office-operations,Audit,replace,docs/detections/DET-028-audit-xdr-m365-rare-office-operations.md

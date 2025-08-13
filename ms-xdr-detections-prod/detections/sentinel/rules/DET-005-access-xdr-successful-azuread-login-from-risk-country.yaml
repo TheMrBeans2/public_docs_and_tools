@@ -1,0 +1,26 @@
+id: 182be68f-2468-49ec-bcc9-af21e775986d
+name: Access - XDR - Successful AzureAD Login from Risk Country - Rule
+kind: Scheduled
+severity: High
+enabled: true
+query: |
+  // Successful interactive login from risky countries (customize list if needed)
+  let lookback = 24h;
+  let risky = dynamic(["CN","RU","KP","IR","SY","CU","BY"]);
+  SigninLogs
+  | where TimeGenerated > ago(lookback)
+  | where ResultType == 0
+  | extend Country = tostring(LocationDetails.countryOrRegion)
+  | where isnotempty(Country) and Country in (risky)
+  | project TimeGenerated, UserPrincipalName, UserId, IPAddress, Country, AppDisplayName, ClientAppUsed, AutonomousSystemNumber, ResourceDisplayName
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1078
+description: Access - XDR - Successful AzureAD Login from Risk Country - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

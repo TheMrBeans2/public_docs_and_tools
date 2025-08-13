@@ -1,0 +1,26 @@
+id: 32a3b7f0-fa1f-4be7-a3d7-7ae1809289cc
+name: Access - XDR - o365 - File Interactions with Suspicious Countries - Rule
+kind: Scheduled
+severity: Medium
+enabled: true
+query: |
+  // File actions from countries outside policy
+  let lookback = 24h;
+  let risky = dynamic(["CN","RU","KP","IR","SY","CU","BY"]);
+  CloudAppEvents
+  | where Timestamp > ago(lookback)
+  | where ActivityType has_any ("FileDownloaded","FileUploaded","FileShared","FileAccessed")
+  | extend Country = tostring(CountryCode)
+  | where Country in (risky)
+  | project Timestamp, UserId, UserName, IPAddress, Country, ActivityType, Application, ObjectName
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - Exfiltration
+relevantTechniques:
+  - T1567.002
+description: Access - XDR - o365 - File Interactions with Suspicious Countries - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

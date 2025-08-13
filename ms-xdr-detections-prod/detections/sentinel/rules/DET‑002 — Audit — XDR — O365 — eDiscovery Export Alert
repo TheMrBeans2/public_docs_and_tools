@@ -1,0 +1,69 @@
+id: 4f3f9e7a-1a5e-4d3c-a9ee-7e8f00c9f2a4
+name: DET-002 - Audit - XDR - O365 - eDiscovery Export Alert
+version: 1.0.0
+kind: Scheduled
+description: >
+  Flags eDiscovery/Purview export actions that can indicate data exfiltration risk.
+  One alert per export action, deduped, with actor and client IP for quick Tier‑1 triage.
+severity: High
+enabled: true
+query: |
+  let lookback = 30m;
+  let targetOps = dynamic([
+    // Common export/search actions across Purview/SCC
+    "Export-ComplianceSearch", "Start-ComplianceSearchAction", "New-ComplianceSearchAction",
+    "CaseExport", "CreateExport", "ExportResults"
+  ]);
+  OfficeActivity
+  | where TimeGenerated between (ago(lookback) .. now())
+  | where OfficeWorkload in~ ("SecurityComplianceCenter","MicrosoftPurview","Exchange")
+  | where Operation in~ targetOps
+  // Build a stable key for deduplication (some records lack SourceRecordId)
+  | extend ExportKey = tostring(coalesce(SourceRecordId, OfficeObjectId, Id,
+                          strcat(Operation, ":", tostring(hash_sha256(tostring(Parameters))))))
+  | summarize arg_max(TimeGenerated, *) by ExportKey
+  | project
+      TimeGenerated,
+      UserId,
+      Operation,
+      OfficeWorkload,
+      ClientIP,
+      Parameters,
+      ExportKey
+queryFrequency: PT5M
+queryPeriod: PT30M
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - Exfiltration
+relevantTechniques:
+  - T1041
+  - T1567
+suppressionEnabled: true
+suppressionDuration: PT30M
+eventGroupingSettings:
+  aggregationKind: AlertPerResult
+alertDetailsOverride:
+  alertDisplayNameFormat: 'O365 eDiscovery Export by {{UserId}} ({{Operation}})'
+  alertDescriptionFormat: >
+    eDiscovery/Purview export action observed in {{OfficeWorkload}} from {{UserId}}.
+    Operation: {{Operation}} | ClientIP: {{ClientIP}} | ExportKey: {{ExportKey}}
+customDetails:
+  UserId: '{{UserId}}'
+  Operation: '{{Operation}}'
+  OfficeWorkload: '{{OfficeWorkload}}'
+  ClientIP: '{{ClientIP}}'
+  ExportKey: '{{ExportKey}}'
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: UserId
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: ClientIP
+incidentConfiguration:
+  createIncident: true
+  groupingConfiguration:
+    enabled: false

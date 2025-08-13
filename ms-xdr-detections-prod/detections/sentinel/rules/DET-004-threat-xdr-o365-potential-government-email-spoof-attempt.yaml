@@ -1,0 +1,28 @@
+id: 89f3e7da-3248-49c0-85ad-39304d7bcdd7
+name: Threat - XDR - o365 - Potential Government Email Spoof Attempt - Rule
+kind: Scheduled
+severity: High
+enabled: true
+query: |
+  // Inbound .gov/.mil with auth failures or spoof detection
+  let lookback = 14d;
+  EmailEvents
+  | where Timestamp > ago(lookback)
+  | where EmailDirection == "Inbound"
+  | extend SenderDomain = tostring(SenderFromDomain)
+  | where SenderDomain matches regex @".*\.gov(\.|$)|.*\.mil(\.|$)"
+  | extend Auth = parse_json(AuthenticationDetails)
+  | extend SPF = tostring(Auth.SPF), DKIM = tostring(Auth.DKIM), DMARC = tostring(Auth.DMARC)
+  | where SPF == "fail" or DKIM == "fail" or DMARC == "fail" or DetectionMethods has_cs "spoof"
+  | project Timestamp, NetworkMessageId, SenderFromAddress, SenderDomain, RecipientEmailAddress, Subject, DeliveryAction, ThreatTypes, DetectionMethods, SPF, DKIM, DMARC
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+description: Threat - XDR - o365 - Potential Government Email Spoof Attempt - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

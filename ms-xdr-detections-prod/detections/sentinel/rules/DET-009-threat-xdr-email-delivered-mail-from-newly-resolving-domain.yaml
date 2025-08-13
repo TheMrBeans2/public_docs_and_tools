@@ -1,0 +1,27 @@
+id: 60bc3e7e-e38b-40f7-bbe6-f8a0de22a733
+name: Threat - XDR - Email - Delivered Mail from Newly Resolving Domain - Rule
+kind: Scheduled
+severity: Medium
+enabled: true
+query: |
+  // Inbound mail from first-seen sender domain (tenant perspective)
+  let lb=30d;
+  let firstSeenDomain =
+      EmailEvents
+      | summarize FirstSeen=min(Timestamp) by SenderFromDomain;
+  EmailEvents
+  | where Timestamp > ago(24h) and EmailDirection == "Inbound"
+  | lookup kind=inner firstSeenDomain on SenderFromDomain
+  | where FirstSeen > ago(lb)
+  | project Timestamp, NetworkMessageId, SenderFromDomain, SenderFromAddress, RecipientEmailAddress, Subject, DeliveryAction, ThreatTypes
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+description: Threat - XDR - Email - Delivered Mail from Newly Resolving Domain - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

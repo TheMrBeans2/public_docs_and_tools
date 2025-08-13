@@ -1,0 +1,38 @@
+id: 3f1f3c58-f284-4d7a-b30b-a03559563bff
+name: Audit - XDR - Suspicious Large Email to External Recipient - Rule
+kind: Scheduled
+severity: Medium
+enabled: true
+query: |
+  let lookback = 24h;
+  let minRecipients = 30;
+  let minTotalRecipients = 50;
+  // TODO: replace with your org's internal domains
+  let internalDomains = dynamic(["contoso.com","contoso.onmicrosoft.com"]);
+  EmailEvents
+  | where Timestamp > ago(lookback) and EmailDirection == "Outbound"
+  | extend RecipientDomain = tolower(extract(@"@(.*)$", 1, RecipientEmailAddress))
+  | where isnotempty(RecipientDomain) and RecipientDomain !in (internalDomains)
+  | summarize
+      Recipients = make_set(RecipientEmailAddress, 2000),
+      FirstSeen  = min(Timestamp),
+      AnySubject = arg_max(Timestamp, Subject),
+      AnyNetworkMessageId = arg_max(Timestamp, NetworkMessageId),
+      TotalRecipientEvents = count()
+    by InternetMessageId, SenderFromAddress
+  | extend RecipientCount = array_length(Recipients)
+  | where RecipientCount >= minRecipients or TotalRecipientEvents >= minTotalRecipients
+  | project FirstSeen, SenderFromAddress, RecipientCount, Recipients, InternetMessageId,
+            NetworkMessageId = tostring(AnyNetworkMessageId),
+            Subject = tostring(AnySubject)
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - Exfiltration
+relevantTechniques:
+  - T1041
+description: Audit - XDR - Suspicious Large Email to External Recipient - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

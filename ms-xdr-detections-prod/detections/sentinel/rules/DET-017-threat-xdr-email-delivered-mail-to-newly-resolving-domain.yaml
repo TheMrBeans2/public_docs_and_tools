@@ -1,0 +1,29 @@
+id: 0e938aaa-a219-4d71-ac83-923f0929d42f
+name: Threat - XDR - Email - Delivered Mail to Newly Resolving Domain - Rule
+kind: Scheduled
+severity: Low
+enabled: true
+query: |
+  // Outbound email to first-seen recipient domain
+  let lb=30d;
+  let recips = 
+      EmailEvents
+      | extend RecipientDomain = tolower(split(RecipientEmailAddress,'@')[1])
+      | summarize FirstSeen=min(Timestamp) by RecipientDomain;
+  EmailEvents
+  | where Timestamp > ago(24h) and EmailDirection == "Outbound"
+  | extend RecipientDomain = tolower(split(RecipientEmailAddress,'@')[1])
+  | lookup kind=inner recips on RecipientDomain
+  | where FirstSeen > ago(lb)
+  | project Timestamp, NetworkMessageId, SenderFromAddress, RecipientEmailAddress, RecipientDomain, Subject
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - Exfiltration
+relevantTechniques:
+  - T1041
+description: Threat - XDR - Email - Delivered Mail to Newly Resolving Domain - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

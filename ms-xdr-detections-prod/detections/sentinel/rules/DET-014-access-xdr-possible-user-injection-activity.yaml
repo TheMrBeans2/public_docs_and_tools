@@ -1,0 +1,44 @@
+id: 2e2d5f8a-d208-4ef9-8878-6a6d401b3947
+name: Access - XDR - Possible User Injection Activity - Rule
+kind: Scheduled
+severity: High
+enabled: true
+query: |
+  // New country sign-in followed by inbox rule forwarding/redirect within 60 minutes
+  let lookback = 2d;
+  let baseline =
+      SigninLogs
+      | where TimeGenerated between (ago(32d)..ago(2d)) and ResultType == 0
+      | summarize by UserPrincipalName, Country=tostring(LocationDetails.countryOrRegion);
+  let newCountrySignin =
+      SigninLogs
+      | where TimeGenerated > ago(lookback) and ResultType == 0
+      | extend Country = tostring(LocationDetails.countryOrRegion)
+      | join kind=leftanti baseline on UserPrincipalName, Country
+      | project SignInTime=TimeGenerated, UserPrincipalName, IPAddress, Country;
+  let fwdRules =
+      OfficeActivity
+      | where TimeGenerated > ago(lookback)
+      | where Operation in~ ("New-InboxRule","Set-InboxRule")
+      | extend P=parse_json(Parameters)
+      | extend MailboxOwnerUPN = iff(isnotempty(tostring(P[0].Value)), tostring(P[0].Value), tostring(UserId))
+      | extend RuleJson = tostring(P)
+      | where RuleJson has_any ("ForwardTo","RedirectTo")
+      | project RuleTime=TimeGenerated, MailboxOwnerUPN, Operation, ClientIP;
+  newCountrySignin
+  | join kind=innerunique (fwdRules) on $left.UserPrincipalName == $right.MailboxOwnerUPN
+  | where RuleTime between (SignInTime .. SignInTime + 1h)
+  | project SignInTime, RuleTime, UserPrincipalName, Country, SignInIP=IPAddress, RuleClientIP=ClientIP, Operation
+queryFrequency: PT1H
+queryPeriod: PT24H
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - CredentialAccess
+  - Persistence
+relevantTechniques:
+  - T1557
+  - T1098
+description: Access - XDR - Possible User Injection Activity - Rule
+suppressionDuration: PT1H
+suppressionEnabled: false

@@ -1,0 +1,10 @@
+DetectionID,Title,Slug,Category,Type,DocPath
+DET-001,Threat - XDR - MS - Cloud Security Alert - Rule,threat-xdr-ms-cloud-security-alert,Threat,replace,docs/detections/DET-001-threat-xdr-ms-cloud-security-alert.md
+DET-002,Audit - XDR - o365 - eDiscovery Export Alert - Rule,audit-xdr-o365-ediscovery-export-alert,Audit,replace,docs/detections/DET-002-audit-xdr-o365-ediscovery-export-alert.md
+DET-003,Endpoint - XDR - Azure SecurityCenter Alert - Rule,endpoint-xdr-azure-securitycenter-alert,Endpoint,replace,docs/detections/DET-003-endpoint-xdr-azure-securitycenter-alert.md
+DET-012,Threat - XDR - Threat Activity Detected - Rule,threat-xdr-threat-activity-detected,Threat,replace,docs/detections/DET-012-threat-xdr-threat-activity-detected.md
+DET-013,Threat - XDR - Threat Activity Past 24 Hours Detected - Rule,threat-xdr-threat-activity-past-24-hours-detected,Threat,replace,docs/detections/DET-013-threat-xdr-threat-activity-past-24-hours-detected.md
+DET-015,Endpoint - XDR - Severe Host Malware Activity - Rule,endpoint-xdr-severe-host-malware-activity,Endpoint,replace,docs/detections/DET-015-endpoint-xdr-severe-host-malware-activity.md
+DET-018,Access - XDR - Short Lived Account Detected - Rule,access-xdr-short-lived-account-detected,Access,replace,docs/detections/DET-018-access-xdr-short-lived-account-detected.md
+DET-021,Endpoint - XDR - Defender - EDR Events - Rule,endpoint-xdr-defender-edr-events,Endpoint,replace,docs/detections/DET-021-endpoint-xdr-defender-edr-events.md
+DET-022,Threat - XDR - o365 - Suspicious Email Forwarding Setting - Rule,threat-xdr-o365-suspicious-email-forwarding-setting,Threat,replace,docs/detections/DET-022-threat-xdr-o365-suspicious-email-forwarding-setting.md

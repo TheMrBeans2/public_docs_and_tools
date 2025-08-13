@@ -1,0 +1,64 @@
+id: 0c6f71c3-1454-4f63-9f2b-0d44a9f083c7
+name: DET-003 - Endpoint - XDR - Azure SecurityCenter Alert
+version: 1.0.1
+kind: Scheduled
+description: >
+  Creates an incident for Microsoft Defender for Cloud (formerly Azure Security Center) SecurityAlert events.
+  One incident per vendor alert (deduped by SystemAlertId).
+severity: High
+enabled: true
+query: |
+  let lookback = 15m;
+  SecurityAlert
+  | where TimeGenerated between (ago(lookback) .. now())
+  | where isnotempty(SystemAlertId)
+  // Defender for Cloud provider names; avoid Sentinel self-loops
+  | where (ProviderName in~ ("Azure Security Center","Microsoft Defender for Cloud")
+          or ProductName has "Defender for Cloud")
+        and ProductName !contains "Sentinel"
+        and ProviderName !contains "Sentinel"
+  | summarize arg_max(TimeGenerated, *) by tostring(SystemAlertId)
+  | project
+      TimeGenerated,
+      ProviderName,
+      ProductName,
+      AlertName,
+      AlertSeverity,
+      CompromisedEntity,
+      SystemAlertId,
+      AlertLink,
+      Entities
+queryFrequency: PT5M
+queryPeriod: PT15M
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - Execution
+  - InitialAccess
+relevantTechniques:
+  - T1190
+  - T1496
+suppressionEnabled: true
+suppressionDuration: PT15M
+eventGroupingSettings:
+  aggregationKind: AlertPerResult
+alertDetailsOverride:
+  alertDisplayNameFormat: 'MDC Alert: {{AlertName}} on {{CompromisedEntity}}'
+  alertDescriptionFormat: >
+    Microsoft Defender for Cloud alert ({{ProviderName}} / {{ProductName}}).
+    Vendor link: {{AlertLink}} | SystemAlertId: {{SystemAlertId}}
+customDetails:
+  SystemAlertId: '{{SystemAlertId}}'
+  ProviderName: '{{ProviderName}}'
+  ProductName: '{{ProductName}}'
+  AlertLink: '{{AlertLink}}'
+  Resource: '{{CompromisedEntity}}'
+entityMappings:
+  - entityType: Host
+    fieldMappings:
+      - identifier: HostName
+        columnName: CompromisedEntity
+incidentConfiguration:
+  createIncident: true
+  groupingConfiguration:
+    enabled: false

@@ -1,0 +1,59 @@
+id: 880189ac-e625-499c-95e4-9cce932f2232
+name: DET-013 - Threat - XDR - Threat Activity Past 24 Hours Detected
+version: 1.0.1
+kind: Scheduled
+description: >
+  Single daily summary alert if any non-Sentinel security alerts fired in the past 24 hours;
+  includes counts by severity and involved providers.
+severity: Medium
+enabled: true
+query: |
+  let windowStart = ago(24h);
+  let windowEnd   = now();
+  SecurityAlert
+  | where TimeGenerated between (windowStart .. windowEnd)
+  // avoid self-counting Sentinel analytics and alert loops
+  | where ProviderName !~ "Azure Sentinel"
+  | summarize
+      TotalAlerts      = count(),
+      High             = countif(AlertSeverity =~ "High"),
+      Medium           = countif(AlertSeverity =~ "Medium"),
+      Low              = countif(AlertSeverity =~ "Low"),
+      Informational    = countif(AlertSeverity =~ "Informational"),
+      Providers        = make_set(ProviderName),
+      WindowStart      = min(TimeGenerated),
+      WindowEnd        = max(TimeGenerated)
+  // only alert if we truly saw activity
+  | where TotalAlerts > 0
+  // pre-format time window strings for alert text
+  | extend WindowStartStr = format_datetime(WindowStart, "yyyy-MM-dd HH:mm 'UTC'"),
+           WindowEndStr   = format_datetime(WindowEnd,   "yyyy-MM-dd HH:mm 'UTC'")
+  | project TotalAlerts, High, Medium, Low, Informational, Providers, WindowStartStr, WindowEndStr
+queryFrequency: P1D        # run once per day
+queryPeriod: P1D           # evaluate the last 24h
+triggerOperator: GreaterThan
+triggerThreshold: 0
+tactics:
+  - Discovery
+relevantTechniques:
+  - T1087
+suppressionEnabled: false   # not needed since frequency is daily
+suppressionDuration: PT1H
+eventGroupingSettings:
+  aggregationKind: SingleAlert
+alertDetailsOverride:
+  alertDisplayNameFormat: 'Threat Activity ({{WindowStartStr}} → {{WindowEndStr}}): {{TotalAlerts}} total (H{{High}}/M{{Medium}}/L{{Low}}/I{{Informational}})'
+  alertDescriptionFormat: 'Providers involved: {{Providers}}'
+customDetails:
+  TotalAlerts: '{{TotalAlerts}}'
+  High: '{{High}}'
+  Medium: '{{Medium}}'
+  Low: '{{Low}}'
+  Informational: '{{Informational}}'
+  Providers: '{{Providers}}'
+  WindowStart: '{{WindowStartStr}}'
+  WindowEnd: '{{WindowEndStr}}'
+incidentConfiguration:
+  createIncident: true
+  groupingConfiguration:
+    enabled: false

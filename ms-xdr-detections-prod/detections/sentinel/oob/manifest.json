@@ -1,0 +1,107 @@
+{
+  "version": "2025-08-12",
+  "source_repo": "https://github.com/Azure/Azure-Sentinel",
+  "license": "MIT (see third_party_notices.md)",
+  "items": [
+    {
+      "name": "AuthenticationAttemptfromNewCountry",
+      "kind": "analytics",
+      "path": "Detections/SigninLogs/AuthenticationAttemptfromNewCountry.yaml",
+      "raw_url": "https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Detections/SigninLogs/AuthenticationAttemptfromNewCountry.yaml",
+      "tables": [
+        "SigninLogs"
+      ],
+      "category": "Account/Login - Entra ID",
+      "rationale_md": "AuthenticationAttemptfromNewCountry.md"
+    },
+    {
+      "name": "ServicePrincipalAuthenticationAttemptfromNewCountry",
+      "kind": "analytics",
+      "path": "Detections/SigninLogs/ServicePrincipalAuthenticationAttemptfromNewCountry.yaml",
+      "raw_url": "https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Detections/SigninLogs/ServicePrincipalAuthenticationAttemptfromNewCountry.yaml",
+      "tables": [
+        "SigninLogs"
+      ],
+      "category": "Service Principals",
+      "rationale_md": "ServicePrincipalAuthenticationAttemptfromNewCountry.md"
+    },
+    {
+      "name": "AccountCreatedandDeletedinShortTimeframe",
+      "kind": "analytics",
+      "path": "Solutions/Microsoft%20Entra%20ID/Analytic%20Rules/AccountCreatedandDeletedinShortTimeframe.yaml",
+      "raw_url": "https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Solutions/Microsoft%20Entra%20ID/Analytic%20Rules/AccountCreatedandDeletedinShortTimeframe.yaml",
+      "tables": [
+        "AuditLogs",
+        "IdentityInfo"
+      ],
+      "category": "Identity Lifecycle",
+      "rationale_md": "AccountCreatedandDeletedinShortTimeframe.md"
+    },
+    {
+      "name": "UserAccountCreatedDeleted_10m",
+      "kind": "analytics",
+      "path": "Detections/SecurityEvent/UserAccountCreatedDeleted_10m.yaml",
+      "raw_url": "https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Detections/SecurityEvent/UserAccountCreatedDeleted_10m.yaml",
+      "tables": [
+        "SecurityEvent"
+      ],
+      "category": "AD On-Prem",
+      "rationale_md": "UserAccountCreatedDeleted_10m.md"
+    },
+    {
+      "name": "Mail_redirect_via_ExO_transport_rule",
+      "kind": "analytics",
+      "path": "Solutions/Microsoft%20365/Analytic%20Rules/Mail_redirect_via_ExO_transport_rule.yaml",
+      "raw_url": "https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Solutions/Microsoft%20365/Analytic%20Rules/Mail_redirect_via_ExO_transport_rule.yaml",
+      "tables": [
+        "OfficeActivity"
+      ],
+      "category": "M365/EXO",
+      "rationale_md": "Mail_redirect_via_ExO_transport_rule.md"
+    },
+    {
+      "name": "NRT_Malicious_Inbox_Rule",
+      "kind": "analytics",
+      "path": "Detections/OfficeActivity/NRT_Malicious_Inbox_Rule.yaml",
+      "raw_url": "https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Detections/OfficeActivity/NRT_Malicious_Inbox_Rule.yaml",
+      "tables": [
+        "OfficeActivity"
+      ],
+      "category": "M365/EXO",
+      "rationale_md": "NRT_Malicious_Inbox_Rule.md"
+    },
+    {
+      "name": "MultipleUsersEmailForwardedToSameDestination",
+      "kind": "hunting",
+      "path": "Solutions/Microsoft%20365/Hunting%20Queries/MultipleUsersEmailForwardedToSameDestination.yaml",
+      "raw_url": "https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Solutions/Microsoft%20365/Hunting%20Queries/MultipleUsersEmailForwardedToSameDestination.yaml",
+      "tables": [
+        "OfficeActivity"
+      ],
+      "category": "M365/EXO",
+      "rationale_md": "MultipleUsersEmailForwardedToSameDestination.md"
+    },
+    {
+      "name": "OfficeMailForwarding_hunting",
+      "kind": "hunting",
+      "path": "Solutions/Microsoft%20365/Hunting%20Queries/OfficeMailForwarding_hunting.yaml",
+      "raw_url": "https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Solutions/Microsoft%20365/Hunting%20Queries/OfficeMailForwarding_hunting.yaml",
+      "tables": [
+        "OfficeActivity"
+      ],
+      "category": "M365/EXO",
+      "rationale_md": "OfficeMailForwarding_hunting.md"
+    },
+    {
+      "name": "RareOfficeOperations",
+      "kind": "analytics",
+      "path": "Solutions/Microsoft%20365/Analytic%20Rules/RareOfficeOperations.yaml",
+      "raw_url": "https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Solutions/Microsoft%20365/Analytic%20Rules/RareOfficeOperations.yaml",
+      "tables": [
+        "OfficeActivity"
+      ],
+      "category": "M365/EXO",
+      "rationale_md": "RareOfficeOperations.md"
+    }
+  ]
+}

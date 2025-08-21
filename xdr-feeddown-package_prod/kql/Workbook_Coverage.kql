@@ -1,0 +1,18 @@
+
+// Workbook Coverage – 24h status based on strict mapping
+let watchlistName = 'NetworkDevices_Watchlist';
+let lookback = 24h;
+let nowUtc = now();
+let WL = _GetWatchlist(watchlistName)
+| project DeviceNameRaw = tostring(['Sentinel Lookup']), IP = tostring(['IP Address']), DeviceType = tostring(['device type']), Site = tostring(['site'])
+| extend DeviceKey = tolower(trim(' ', DeviceNameRaw)),
+         Site = iif(isempty(Site), tostring(split(DeviceKey, '-')[0]), Site);
+let Active = Syslog
+| where TimeGenerated > nowUtc - lookback
+| extend ComputerKey = tolower(trim(' ', tostring(Computer)))
+| summarize LastSeen = max(TimeGenerated) by ComputerKey;
+WL
+| join kind=leftouter Active on $left.DeviceKey == $right.ComputerKey
+| extend LastSeen = LastSeen
+| extend Status = iff(isnull(LastSeen) or LastSeen < nowUtc - lookback, 'Missing', 'Healthy')
+| project Device = DeviceNameRaw, IP, DeviceType, Site, LastSeen, Status

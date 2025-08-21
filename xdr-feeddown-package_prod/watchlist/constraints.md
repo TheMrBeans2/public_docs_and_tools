@@ -1,0 +1,4 @@
+- `Sentinel Lookup` must match `Syslog.Computer` exactly after lowercasing and trimming.
+- Avoid trailing spaces or hidden characters.
+- Ensure uniqueness of `Sentinel Lookup` across all rows.
+- Use `enabled=false` for long-term suppression; use `suppress_until` for temporary maintenance (UTC).

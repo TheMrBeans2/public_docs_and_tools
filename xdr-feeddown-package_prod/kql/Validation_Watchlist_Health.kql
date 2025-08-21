@@ -1,0 +1,30 @@
+
+// Validation & Data Quality checks for `NetworkDevices_Watchlist`
+// Results are split by Kind (Duplicates, Disabled, UnderSuppression, WatchlistNotSeen7d, SyslogNotInWatchlist)
+let watchlistName = 'NetworkDevices_Watchlist';
+let nowUtc = now();
+let WL_raw = _GetWatchlist(watchlistName);
+let WL = WL_raw
+| project DeviceNameRaw = tostring(['Sentinel Lookup']), IP = tostring(['IP Address']),
+          DeviceType = tostring(['device type']), Site = tostring(['site']),
+          EnabledRaw = tostring(['enabled']), SuppressUntil = todatetime(['suppress_until'])
+| extend DeviceKey = tolower(trim(' ', DeviceNameRaw)),
+         Enabled = case(toupper(EnabledRaw) in ('FALSE','0','NO','N','DISABLED'), false, true)
+| extend Site = iif(isempty(Site), tostring(split(DeviceKey, '-')[0]), Site);
+// 1) Duplicates by DeviceKey
+let Dups = WL | summarize Count = count(), IPs = make_set(IP) by DeviceKey | where Count > 1 | project Kind='DuplicateDeviceName', DeviceKey, Count, IPs;
+// 2) Disabled entries
+let Disabled = WL | where Enabled == false | project Kind='Disabled', DeviceKey, IP, Site;
+// 3) Under suppression
+let UnderSupp = WL | where isnotempty(SuppressUntil) and SuppressUntil > nowUtc | project Kind='UnderSuppression', DeviceKey, IP, Site, SuppressUntil;
+// 4) Watchlist not seen in 7d
+let Active7 = Syslog | where TimeGenerated > nowUtc - 7d | extend ComputerKey = tolower(trim(' ', tostring(Computer))) | summarize LastSeen=max(TimeGenerated) by ComputerKey;
+let WLNotSeen = WL
+| join kind=leftouter Active7 on $left.DeviceKey == $right.ComputerKey
+| where isnull(LastSeen)
+| project Kind='WatchlistNotSeen7d', DeviceKey, IP, Site;
+// 5) Syslog computers not in watchlist
+let SyslogNotWL = Active7
+| join kind=leftanti (WL | project ComputerKey = DeviceKey) on ComputerKey
+| project Kind='SyslogNotInWatchlist', DeviceKey=ComputerKey;
+union Dups, Disabled, UnderSupp, WLNotSeen, SyslogNotWL

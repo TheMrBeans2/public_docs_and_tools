@@ -1,0 +1,3 @@
+Sentinel Lookup,IP Address,device type,site,enabled,suppress_until,owner,notes
+abr1-wlc-0301,10.84.233.126,wlc,abr1,true,,noc@example.org,Primary WLC
+abr1-csw-0301,10.84.233.125,csw,abr1,true,,noc@example.org,Core switch

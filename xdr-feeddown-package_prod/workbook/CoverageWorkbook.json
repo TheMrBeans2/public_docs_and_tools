@@ -1,0 +1,19 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "\n// Workbook Coverage \u2013 24h status based on strict mapping\nlet watchlistName = 'NetworkDevices_Watchlist';\nlet lookback = 24h;\nlet nowUtc = now();\nlet WL = _GetWatchlist(watchlistName)\n| project DeviceNameRaw = tostring(['Sentinel Lookup']), IP = tostring(['IP Address']), DeviceType = tostring(['device type']), Site = tostring(['site'])\n| extend DeviceKey = tolower(trim(' ', DeviceNameRaw)),\n         Site = iif(isempty(Site), tostring(split(DeviceKey, '-')[0]), Site);\nlet Active = Syslog\n| where TimeGenerated > nowUtc - lookback\n| extend ComputerKey = tolower(trim(' ', tostring(Computer)))\n| summarize LastSeen = max(TimeGenerated) by ComputerKey;\nWL\n| join kind=leftouter Active on $left.DeviceKey == $right.ComputerKey\n| extend LastSeen = LastSeen\n| extend Status = iff(isnull(LastSeen) or LastSeen < nowUtc - lookback, 'Missing', 'Healthy')\n| project Device = DeviceNameRaw, IP, DeviceType, Site, LastSeen, Status\n",
+        "size": 1,
+        "title": "Network Devices Coverage (24h)",
+        "exportToExcelOptions": "visible",
+        "timeContext": {
+          "durationMs": 86400000
+        }
+      },
+      "name": "coverageTable"
+    }
+  ]
+}

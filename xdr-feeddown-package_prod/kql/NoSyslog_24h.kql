@@ -1,0 +1,36 @@
+
+// STRICT per-device missing logs (24h), mapping: Syslog.Computer == Watchlist['Sentinel Lookup']
+let watchlistName = 'NetworkDevices_Watchlist';
+let lookback = 25h;    // 24h + jitter buffer
+let threshold = 24h;
+let nowUtc = now();
+// Watchlist load & normalization
+let WL = _GetWatchlist(watchlistName)
+| project DeviceNameRaw = tostring(['Sentinel Lookup']),
+          IP = tostring(['IP Address']),
+          DeviceType = tostring(['device type']),
+          Site = tostring(['site']),
+          EnabledRaw = tostring(['enabled']),
+          SuppressUntil = todatetime(['suppress_until']),
+          Owner = tostring(['owner']),
+          Notes = tostring(['notes'])
+| extend DeviceKey = tolower(trim(' ', DeviceNameRaw)),
+         Enabled = case(toupper(EnabledRaw) in ('FALSE','0','NO','N','DISABLED'), false, true)
+| where Enabled == true
+| where isnull(SuppressUntil) or SuppressUntil < nowUtc
+| extend Site = iif(isempty(Site), tostring(split(DeviceKey, '-')[0]), Site);
+// Summarize last seen from Syslog
+let Active = Syslog
+| where TimeGenerated > nowUtc - lookback
+| extend ComputerKey = tolower(trim(' ', tostring(Computer)))
+| summarize LastSeen = max(TimeGenerated),
+            SampleHostIP = any(HostIP) by ComputerKey;
+// Strict equality join
+WL
+| join kind=leftouter Active on $left.DeviceKey == $right.ComputerKey
+| extend LastSeenCombined = LastSeen
+| extend Missing = iif(isnull(LastSeenCombined) or LastSeenCombined < nowUtc - threshold, 1, 0)
+| extend Reason = case(isnull(LastSeenCombined), 'No Syslog seen in lookback window',
+                       strcat('Last seen at ', format_datetime(LastSeenCombined, 'yyyy-MM-dd HH:mm:ss'), 'Z'))
+| project DeviceName = DeviceNameRaw, IP, DeviceType, Site, Owner, Notes, LastSeen = LastSeenCombined, Missing, Reason, HostIP = SampleHostIP
+| where Missing == 1

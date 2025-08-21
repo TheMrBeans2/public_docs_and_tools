@@ -1,0 +1,25 @@
+
+// STRICT per-device missing logs (7d)
+let watchlistName = 'NetworkDevices_Watchlist';
+let lookback = 8d;
+let threshold = 7d;
+let nowUtc = now();
+let WL = _GetWatchlist(watchlistName)
+| project DeviceNameRaw = tostring(['Sentinel Lookup']), IP = tostring(['IP Address']),
+          DeviceType = tostring(['device type']), Site = tostring(['site']),
+          EnabledRaw = tostring(['enabled']), SuppressUntil = todatetime(['suppress_until'])
+| extend DeviceKey = tolower(trim(' ', DeviceNameRaw)),
+         Enabled = case(toupper(EnabledRaw) in ('FALSE','0','NO','N','DISABLED'), false, true)
+| where Enabled == true
+| where isnull(SuppressUntil) or SuppressUntil < nowUtc
+| extend Site = iif(isempty(Site), tostring(split(DeviceKey, '-')[0]), Site);
+let Active = Syslog
+| where TimeGenerated > nowUtc - lookback
+| extend ComputerKey = tolower(trim(' ', tostring(Computer)))
+| summarize LastSeen = max(TimeGenerated) by ComputerKey;
+WL
+| join kind=leftouter Active on $left.DeviceKey == $right.ComputerKey
+| extend LastSeenCombined = LastSeen
+| extend Missing = iif(isnull(LastSeenCombined) or LastSeenCombined < nowUtc - threshold, 1, 0)
+| where Missing == 1
+| project DeviceName = DeviceNameRaw, IP, DeviceType, Site, LastSeen = LastSeenCombined

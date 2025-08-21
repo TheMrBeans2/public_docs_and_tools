@@ -1,0 +1,35 @@
+
+// STRICT feed-down (60m) by site, mapping: Syslog.Computer == Watchlist['Sentinel Lookup']
+let watchlistName = 'NetworkDevices_Watchlist';
+let lookback = 65m;
+let threshold = 60m;
+let minCount = 3;
+let minPercent = 0.5;
+let nowUtc = now();
+let WL = _GetWatchlist(watchlistName)
+| project DeviceNameRaw = tostring(['Sentinel Lookup']),
+          IP = tostring(['IP Address']),
+          DeviceType = tostring(['device type']),
+          Site = tostring(['site']),
+          EnabledRaw = tostring(['enabled']),
+          SuppressUntil = todatetime(['suppress_until'])
+| extend DeviceKey = tolower(trim(' ', DeviceNameRaw)),
+         Enabled = case(toupper(EnabledRaw) in ('FALSE','0','NO','N','DISABLED'), false, true)
+| where Enabled == true
+| where isnull(SuppressUntil) or SuppressUntil < nowUtc
+| extend Site = iif(isempty(Site), tostring(split(DeviceKey, '-')[0]), Site);
+let Active = Syslog
+| where TimeGenerated > nowUtc - lookback
+| extend ComputerKey = tolower(trim(' ', tostring(Computer)))
+| summarize LastSeen = max(TimeGenerated) by ComputerKey;
+let MissingNow = WL
+| join kind=leftouter Active on $left.DeviceKey == $right.ComputerKey
+| extend LastSeenCombined = LastSeen
+| extend Missing = iif(isnull(LastSeenCombined) or LastSeenCombined < nowUtc - threshold, 1, 0)
+| where Missing == 1
+| project Site, DeviceName = DeviceNameRaw, DeviceType, IP, LastSeen = LastSeenCombined;
+MissingNow
+| summarize MissingCount = count(), Devices = make_set(DeviceName, 1000) by Site
+| join kind=inner (WL | summarize SiteTotal = count() by Site) on Site
+| extend MissingPct = todouble(MissingCount) / todouble(SiteTotal)
+| where MissingCount >= minCount or MissingPct >= minPercent
